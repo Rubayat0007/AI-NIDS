@@ -154,64 +154,26 @@ The model uses 20 network-flow features:
 
 ## Model Evaluation
 
-The primary model is a Random Forest classifier trained and evaluated using the CICIDS2017 network-intrusion dataset.
+The Random Forest model was evaluated on a held-out CICIDS2017 test set.
 
-The project reports the following offline evaluation results:
+| Metric | Score |
+|---|---:|
+| Accuracy | 99.5452% |
+| Precision | 98.2019% |
+| Recall | 99.0081% |
+| F1-score | 98.6033% |
 
-| Metric    | Result |
-| --------- | -----: |
-| Accuracy  | 99.55% |
-| Precision | 98.20% |
-| Recall    | 99.01% |
-| F1-score  | 98.60% |
+### Evaluation Dataset
 
-These metrics represent offline evaluation on a held-out portion of the CICIDS2017 dataset.
+- Total dataset rows: 2,020,632
+- Training rows: 1,616,505
+- Testing rows: 404,127
+- Benign test samples: 338,597
+- Attack test samples: 65,530
 
-The project also contains a separate synthetic demonstration dataset for development and testing. Results from the synthetic dataset are not used as the primary model-performance claim.
+### Confusion Matrix
 
-## Live Detection Demonstration
-
-The dashboard provides an experimental packet-capture and prediction workflow using Scapy and the trained Random Forest model.
-
-The live-capture workflow is intended for educational and research demonstrations. It should not be interpreted as a production-grade, continuously operating enterprise Network Intrusion Detection System.
-
-The offline CICIDS2017 evaluation and the live packet-capture demonstration are separate parts of the project.
-
-## Limitations
-
-* The reported performance metrics come from offline evaluation on CICIDS2017.
-* Offline dataset performance may not represent performance on unseen real-world network traffic.
-* The synthetic dataset is used for development and demonstration only.
-* The live packet-capture workflow is experimental.
-* The risk score and severity labels are application-level indicators.
-* The risk score has not been independently calibrated as a probability of compromise.
-* Live packet capture may require administrative privileges.
-* The system is intended for educational and experimental use.
-* The application should not replace production security monitoring, network sensors, or incident-response tools.
-
-## Future Improvements
-
-* Add network-interface selection
-* Add real-time traffic charts
-* Add email or notification alerts
-* Improve multi-class attack classification
-* Add automated model retraining
-* Add database storage for detection history
-* Add additional validation on unseen network traffic
-* Package the application as a Windows executable
-
-## Important Notes
-
-* Run the application only on networks where packet capture is permitted.
-* Administrative privileges may be required for live packet capture.
-* The trained model file may not be included if it is excluded by `.gitignore`.
-* Raw and processed datasets may need to be obtained separately.
-* Detection results are intended for educational and experimental use.
-
-## Author
-
-Rubayat Karim
-
-## Repository
-
-[GitHub Repository](https://github.com/Rubayat0007/AI-NIDS)
+```text
+[[337409   1188]
+ [   650  64880]]
+```
