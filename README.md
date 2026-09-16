@@ -168,7 +168,7 @@ The model uses 20 network-flow features:
 
 ## Author
 
-Rubayat Shaikh
+Rubayat Karim
 
 ## Repository
 
