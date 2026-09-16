@@ -13,3 +13,6 @@ Thumbs.db
 data/raw/
 data/processed/
 *.csv
+
+results/
+backup_before_upgrade_*/
