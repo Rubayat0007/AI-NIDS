@@ -10,3 +10,6 @@ detection_log.csv
 .idea/
 .DS_Store
 Thumbs.db
+data/raw/
+data/processed/
+*.csv
