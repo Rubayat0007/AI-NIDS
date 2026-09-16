@@ -297,31 +297,31 @@ def extract_features(packets, duration):
             fwd_iat_mean = float(np.mean(intervals))
 
     feature_values = {
-        "flow_duration": duration,
-        "ack_count": ack_count,
-        "rst_count": rst_count,
-        "fin_count": fin_count,
-        "active_time": duration,
-        "idle_time": 0.0,
-        "header_length": packet_count * 20,
-        "down_up_ratio": down_up_ratio,
-        "fwd_iat_mean": fwd_iat_mean,
-        "bwd_iat_mean": bwd_iat_mean,
-        "fwd_packet_length": forward_bytes,
-        "bwd_packet_length": backward_bytes,
-        "flow_bytes": total_bytes,
-        "flow_packets": packet_count,
-        "flow_rate": flow_rate,
-        "packet_rate": packet_rate,
-        "avg_packet_size": average_packet_size,
-        "total_fwd_packets": forward_packets,
-        "total_bwd_packets": backward_packets,
-        "fwd_packet_length_mean": fwd_packet_length_mean,
-        "bwd_packet_length_mean": bwd_packet_length_mean,
-        "syn_count": syn_count,
-        "tcp_packets": tcp_packets,
-        "udp_packets": udp_packets,
-    }
+    "flow_duration": duration,
+    "ack_count": ack_count,
+    "rst_count": rst_count,
+    "fin_count": fin_count,
+    "active_time": duration,
+    "idle_time": 0.0,
+    "header_length": packet_count * 20,
+    "down_up_ratio": down_up_ratio,
+    "fwd_iat_mean": fwd_iat_mean,
+    "bwd_iat_mean": bwd_iat_mean,
+    "fwd_packet_length": forward_bytes,
+    "bwd_packet_length": backward_bytes,
+    "flow_bytes": total_bytes,
+    "flow_packets": packet_count,
+    "flow_rate": flow_rate,
+    "packet_rate": packet_rate,
+    "avg_packet_size": average_packet_size,
+    "total_fwd_packets": forward_packets,
+    "total_bwd_packets": backward_packets,
+    "fwd_packet_length_mean": fwd_packet_length_mean,
+    "bwd_packet_length_mean": bwd_packet_length_mean,
+    "syn_count": syn_count,
+    "tcp_packets": tcp_packets,
+    "udp_packets": udp_packets,
+}
 
     final_features = {}
 
@@ -338,7 +338,7 @@ def extract_features(packets, duration):
 
 def calculate_severity(prediction, confidence):
     """
-    Calculate severity using the prediction and confidence.
+    Assign a severity level based on the prediction and confidence.
 
     Prediction:
         0 = benign
@@ -351,17 +351,18 @@ def calculate_severity(prediction, confidence):
     prediction = int(prediction)
     confidence = float(confidence)
 
-    if prediction == 0:
-        if confidence < 0.75:
+    # Attack prediction
+    if prediction == 1:
+        if confidence >= 0.80:
+            return "HIGH"
+        elif confidence >= 0.50:
+            return "MEDIUM"
+        else:
             return "SUSPICIOUS"
 
-        return "LOW"
-
-    if confidence >= 0.80:
-        return "HIGH"
-
-    if confidence >= 0.50:
-        return "MEDIUM"
+    # Benign prediction
+    if confidence < 0.75:
+        return "SUSPICIOUS"
 
     return "LOW"
 
