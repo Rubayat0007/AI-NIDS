@@ -1,0 +1,21 @@
+AI-NIDS MODEL EVALUATION
+=================================================================
+
+Model: Random Forest
+Evaluation Samples: 2000
+
+Accuracy  : 97.95%
+Precision : 97.95%
+Recall    : 97.95%
+F1-Score  : 97.95%
+
+CLASSIFICATION REPORT
+=================================================================
+              precision    recall  f1-score   support
+
+           0       0.98      0.98      0.98      1000
+           1       0.98      0.98      0.98      1000
+
+    accuracy                           0.98      2000
+   macro avg       0.98      0.98      0.98      2000
+weighted avg       0.98      0.98      0.98      2000
