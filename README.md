@@ -44,7 +44,7 @@ The project combines offline machine-learning evaluation with an experimental li
 * Random Forest
 * CICIDS2017 dataset
 
-## Project Structure
+## Main Project Structure
 
 ```text
 AI-NIDS/
@@ -64,6 +64,10 @@ AI-NIDS/
 │   ├── test_schema.py
 │   └── test_severity.py
 ├── results/
+│   ├── cicids2017_metrics.txt
+│   ├── cicids2017_confusion_matrix.png
+│   ├── evaluation_predictions.csv
+│   └── detection_log.csv
 ├── requirements.txt
 ├── .gitignore
 └── README.md
@@ -151,7 +155,7 @@ Risk Score: 30.00%
 Severity: SUSPICIOUS
 ```
 
-The `UNCERTAIN` status is used when the model predicts normal traffic but the calculated severity indicates that the traffic may require further investigation.
+The UNCERTAIN status is used when the model predicts normal traffic but the confidence or severity assessment indicates that the traffic may require further investigation.
 
 ## Model Features
 
@@ -182,21 +186,60 @@ The canonical feature order is defined in `src/features/schema.py` and must rema
 
 ## Model Evaluation
 
-The evaluation script is run with:
+Run the evaluation script from the project root:
 
 ```powershell
 python src/evaluate_model.py
 ```
 
-It generates:
+The evaluation script uses an **80/20 train-test split**:
+
+* Total dataset rows: `2,020,632`
+* Training rows: `1,616,505`
+* Held-out testing rows: `404,127`
+
+The evaluation uses a reproducible random state of `42` and calculates the reported metrics on the held-out test set containing `404,127` records. The held-out test records are not used for training during this evaluation run.
+
+The script generates:
+
+* `results/cicids2017_metrics.txt`
+* `results/cicids2017_confusion_matrix.png`
+* `results/evaluation_predictions.csv`
+
+The files `results/cicids2017_evaluation_metrics.txt` and `results/cicids2017_classification_report.txt` contain results from an earlier full-dataset evaluation and are retained as supplementary outputs. They are not the primary held-out test-set results documented above.
+
+### Held-Out Evaluation Results
+
+| Metric    |  Score |
+| --------- | -----: |
+| Accuracy  | 99.55% |
+| Precision | 98.20% |
+| Recall    | 99.01% |
+| F1-score  | 98.60% |
+
+The evaluation was performed with:
+
+- Random state: `42`
+- Test size: `20%`
+- Test records: `404,127`
+
+### Held-Out Confusion Matrix
+
+```text
+[[337409   1188]
+ [   650  64880]]
+```
+
+The confusion matrix contains `404,127` predictions, corresponding to the held-out test set.
+
+### Supplementary Full-Dataset Evaluation
+
+A previous full-dataset evaluation is also retained in:
 
 * `results/cicids2017_evaluation_metrics.txt`
 * `results/cicids2017_classification_report.txt`
-* `results/cicids2017_confusion_matrix.png`
 
-### Evaluation Results
-
-The current evaluation script processes the full CICIDS2017 binary dataset containing 2,020,632 rows.
+That evaluation processed all `2,020,632` dataset rows and reported:
 
 | Metric    |  Score |
 | --------- | -----: |
@@ -205,14 +248,7 @@ The current evaluation script processes the full CICIDS2017 binary dataset conta
 | Recall    | 99.80% |
 | F1-score  | 99.30% |
 
-**Important:** These figures should not be described as held-out test performance unless the evaluated dataset is separate from the data used to train the model. If a separate test-set evaluation is available, document it in a distinct section and identify the training and testing splits clearly.
-
-### Current Confusion Matrix
-
-```text
-[[1689012    3972]
- [    650  326998]]
-```
+These full-dataset figures are provided for reference only. They should not be interpreted as held-out test performance because the evaluation was performed across the complete dataset rather than exclusively on unseen test data.
 
 ## Validation
 
