@@ -1,37 +1,37 @@
 from pathlib import Path
 
 import joblib
-import matplotlib.pyplot as plt
 import pandas as pd
-
 from sklearn.metrics import (
     accuracy_score,
     classification_report,
     confusion_matrix,
-    ConfusionMatrixDisplay,
     f1_score,
     precision_score,
     recall_score,
 )
+from sklearn.model_selection import train_test_split
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
-DATA_FILE = (
+DATASET_PATH = (
     PROJECT_ROOT
     / "data"
     / "processed"
     / "cicids2017_binary.csv"
 )
-
-MODEL_FILE = (
+MODEL_PATH = (
     PROJECT_ROOT
     / "src"
     / "models"
     / "nids_random_forest_cicids2017.pkl"
 )
 
-RESULTS_DIR = PROJECT_ROOT / "results"
+TARGET_COLUMN = "label"
+
+RANDOM_STATE = 42
+TEST_SIZE = 0.20
 
 FEATURES = [
     "flow_duration",
@@ -57,22 +57,16 @@ FEATURES = [
 ]
 
 
-def main() -> None:
-    if not DATA_FILE.exists():
-        raise FileNotFoundError(f"Dataset not found: {DATA_FILE}")
+def load_dataset() -> pd.DataFrame:
+    if not DATASET_PATH.exists():
+        raise FileNotFoundError(f"Dataset not found: {DATASET_PATH}")
 
-    if not MODEL_FILE.exists():
-        raise FileNotFoundError(f"Model not found: {MODEL_FILE}")
-
-    RESULTS_DIR.mkdir(parents=True, exist_ok=True)
-
-    print("Loading CICIDS2017 dataset...")
-    df = pd.read_csv(DATA_FILE)
+    dataset = pd.read_csv(DATASET_PATH)
 
     missing_columns = [
         column
-        for column in FEATURES + ["label"]
-        if column not in df.columns
+        for column in FEATURES + [TARGET_COLUMN]
+        if column not in dataset.columns
     ]
 
     if missing_columns:
@@ -80,86 +74,77 @@ def main() -> None:
             f"Missing required columns: {missing_columns}"
         )
 
-    model = joblib.load(MODEL_FILE)
+    dataset = dataset[FEATURES + [TARGET_COLUMN]].copy()
 
-    X = df[FEATURES]
-    y = df["label"]
+    dataset = dataset.replace([float("inf"), float("-inf")], pd.NA)
+    dataset = dataset.dropna()
 
-    predictions = model.predict(X)
+    return dataset
 
-    accuracy = accuracy_score(y, predictions)
-    precision = precision_score(
-        y,
-        predictions,
-        zero_division=0,
-    )
-    recall = recall_score(
-        y,
-        predictions,
-        zero_division=0,
-    )
-    f1 = f1_score(
-        y,
-        predictions,
-        zero_division=0,
+
+def normalize_labels(labels: pd.Series) -> pd.Series:
+    return (
+        labels.astype(str)
+        .str.strip()
+        .str.lower()
+        .map(lambda value: 0 if value in {"benign", "normal", "0"} else 1)
     )
 
-    report = classification_report(
+
+def main() -> None:
+    dataset = load_dataset()
+
+    X = dataset[FEATURES]
+    y = normalize_labels(dataset[TARGET_COLUMN])
+
+    X_train, X_test, y_train, y_test = train_test_split(
+        X,
         y,
-        predictions,
-        target_names=["Benign", "Attack"],
-        zero_division=0,
+        test_size=TEST_SIZE,
+        random_state=RANDOM_STATE,
+        stratify=y,
     )
 
-    matrix = confusion_matrix(y, predictions)
+    model = joblib.load(MODEL_PATH)
 
-    print("\nCICIDS2017 model evaluation")
-    print("---------------------------")
-    print(f"Dataset rows: {len(df):,}")
-    print(f"Accuracy:  {accuracy:.4f}")
-    print(f"Precision: {precision:.4f}")
-    print(f"Recall:    {recall:.4f}")
-    print(f"F1-score:  {f1:.4f}")
-    print("\nClassification report:")
-    print(report)
-    print("\nConfusion matrix:")
+    predictions = model.predict(X_test)
+
+    accuracy = accuracy_score(y_test, predictions)
+    precision = precision_score(y_test, predictions, zero_division=0)
+    recall = recall_score(y_test, predictions, zero_division=0)
+    f1 = f1_score(y_test, predictions, zero_division=0)
+
+    matrix = confusion_matrix(y_test, predictions)
+
+    print("\n=== Reproducible Held-Out Evaluation ===")
+    print(f"Dataset rows:       {len(dataset):,}")
+    print(f"Training rows:      {len(X_train):,}")
+    print(f"Testing rows:       {len(X_test):,}")
+    print(f"Random state:       {RANDOM_STATE}")
+    print(f"Test size:          {TEST_SIZE:.0%}")
+
+    print("\n=== Metrics ===")
+    print(f"Accuracy:           {accuracy:.4%}")
+    print(f"Precision:          {precision:.4%}")
+    print(f"Recall:             {recall:.4%}")
+    print(f"F1-score:           {f1:.4%}")
+
+    print("\n=== Classification Report ===")
+    print(
+        classification_report(
+            y_test,
+            predictions,
+            target_names=["Benign", "Attack"],
+            zero_division=0,
+        )
+    )
+
+    print("=== Confusion Matrix ===")
     print(matrix)
 
-    metrics_file = RESULTS_DIR / "cicids2017_evaluation_metrics.txt"
-
-    with metrics_file.open("w", encoding="utf-8") as file:
-        file.write("AI-NIDS CICIDS2017 Evaluation\n")
-        file.write("============================\n")
-        file.write(f"Dataset rows: {len(df):,}\n")
-        file.write(f"Accuracy: {accuracy:.6f}\n")
-        file.write(f"Precision: {precision:.6f}\n")
-        file.write(f"Recall: {recall:.6f}\n")
-        file.write(f"F1-score: {f1:.6f}\n\n")
-        file.write("Classification report:\n")
-        file.write(report)
-        file.write("\nConfusion matrix:\n")
-        file.write(str(matrix))
-
-    report_file = RESULTS_DIR / "cicids2017_classification_report.txt"
-    report_file.write_text(report, encoding="utf-8")
-
-    confusion_file = RESULTS_DIR / "cicids2017_confusion_matrix.png"
-
-    display = ConfusionMatrixDisplay(
-        confusion_matrix=matrix,
-        display_labels=["Benign", "Attack"],
-    )
-
-    display.plot()
-    plt.title("AI-NIDS CICIDS2017 Confusion Matrix")
-    plt.tight_layout()
-    plt.savefig(confusion_file, dpi=300)
-    plt.close()
-
-    print("\nGenerated files:")
-    print(metrics_file)
-    print(report_file)
-    print(confusion_file)
+    print("\nMatrix layout:")
+    print("[[true_benign_predicted_benign, true_benign_predicted_attack],")
+    print(" [true_attack_predicted_benign, true_attack_predicted_attack]]")
 
 
 if __name__ == "__main__":

@@ -338,14 +338,7 @@ def extract_features(packets, duration):
 
 def calculate_severity(prediction, confidence):
     """
-    Assign a severity level based on the prediction and confidence.
-
-    Prediction:
-        0 = benign
-        1 = attack
-
-    Confidence:
-        Expected range: 0.0 to 1.0
+    Assign a severity level based on prediction and confidence.
     """
 
     prediction = int(prediction)
@@ -365,7 +358,6 @@ def calculate_severity(prediction, confidence):
         return "SUSPICIOUS"
 
     return "LOW"
-
 
 # ============================================================
 # SAVE DETECTION LOG
