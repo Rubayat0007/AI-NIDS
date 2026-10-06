@@ -10,13 +10,7 @@ from datetime import datetime
 import tkinter as tk
 from tkinter import ttk, messagebox
 
-from predict import (
-    load_model,
-    capture_network_traffic,
-    predict_traffic,
-)
-
-load_model()
+from src.capture import capture_network_traffic
 
 
 # ============================================================
@@ -892,21 +886,13 @@ def detection_worker():
         )
 
         # ----------------------------------------------------
-        # Prediction
+        # Live ML inference
         # ----------------------------------------------------
 
-        result = predict_traffic(
-            packets,
-            duration
-        )
-
-        # ----------------------------------------------------
-        # Update GUI safely
-        # ----------------------------------------------------
-
-        root.after(
-            0,
-            lambda: update_gui(result)
+        raise RuntimeError(
+            "Live inference is disabled: the current packet feature "
+            "pipeline has not been verified as compatible with the "
+            "frozen CICIDS2017 training features."
         )
 
     except Exception as error:
@@ -915,9 +901,11 @@ def detection_worker():
         print("DASHBOARD ERROR")
         print(error)
 
+        error_message = str(error)
+
         root.after(
             0,
-            lambda: detection_error(str(error))
+            lambda message=error_message: detection_error(message)
         )
 
 
