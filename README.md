@@ -250,6 +250,28 @@ That evaluation processed all `2,020,632` dataset rows and reported:
 
 These full-dataset figures are provided for reference only. They should not be interpreted as held-out test performance because the evaluation was performed across the complete dataset rather than exclusively on unseen test data.
 
+### Supplementary Held-Out Error-Slice Analysis
+
+The repository includes `scripts/analyze_heldout_error_slices.py` for supplementary
+analysis of error concentration within the same reproducible held-out test split.
+This analysis uses the frozen model and does not retrain or modify the model or dataset.
+
+The analysis shows that held-out errors are not uniformly distributed across the
+feature space. In particular:
+
+* The lowest `flow_packets` quartile has 88.07% attack recall, compared with
+  99.94% in the highest quartile.
+* The lowest `flow_bytes` quartile has a 1.367% benign false-positive rate,
+  substantially higher than the other `flow_bytes` quartiles.
+* The highest `packet_rate` quartile has 94.22% attack recall, compared with
+  99.78% in the third quartile.
+* Long-duration and high-activity regimes perform substantially better; for
+  example, the highest `flow_duration` quartile has 99.97% attack recall.
+
+These are descriptive held-out slices, not causal feature-effect estimates or
+deployment thresholds. The supplementary analysis does not replace the primary
+held-out benchmark above and does not authorize live inference.
+
 ## Validation
 
 Run the test suite:
