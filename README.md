@@ -114,26 +114,24 @@ python .\src\dashboard.py
 
 The application opens the AI-NIDS desktop dashboard.
 
-Select **Run Network Detection** to capture live network traffic. The application captures traffic for approximately eight seconds, processes the captured packets, and displays the resulting prediction.
+The dashboard can capture live network traffic for diagnostic purposes. Live packet
+capture currently does **not** perform machine-learning inference because compatibility
+between the frozen CICIDS2017 model and the live traffic domain has not been established.
 
 Live packet capture may require administrative privileges and appropriate permission to monitor the selected network.
 
-## Running Live Prediction Directly
+## Live Prediction Status
 
-The prediction module can also be run directly:
+Live machine-learning prediction is currently **disabled**.
 
-```powershell
-python -m src.predict
-```
+The packet capture and flow-extraction components can be exercised independently for
+validation and diagnostics, but the frozen CICIDS2017 model is not applied to live
+traffic. This prevents the application from presenting unvalidated live predictions
+when the deployment traffic distribution differs substantially from the model's
+training domain.
 
-The prediction module:
-
-1. Loads the Random Forest model.
-2. Captures a short traffic window.
-3. Extracts the canonical 20-feature schema.
-4. Produces a prediction and confidence score.
-5. Calculates the severity classification.
-6. Appends the result to `results/detection_log.csv`.
+Offline model evaluation remains supported through the documented CICIDS2017
+evaluation pipeline.
 
 ## Detection Output
 
