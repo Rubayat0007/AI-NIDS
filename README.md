@@ -6,30 +6,32 @@ AI-Based Network Intrusion Detection System using machine learning and live netw
 
 AI-NIDS is a desktop-based Network Intrusion Detection System that captures network traffic, extracts network-flow features, and uses a Random Forest classifier to identify potentially suspicious traffic.
 
-The application provides a Tkinter dashboard that displays:
+The application provides a Tkinter dashboard for:
 
-* Traffic prediction
-* Prediction confidence
-* Attack-probability risk score
-* Severity classification
-* Number of captured packets
-* Capture duration
-* Recent detection history
+* Live network packet capture for authorized diagnostic use
+* Network-flow feature extraction
+* Capture duration and packet-count reporting
+* Recent detection-history display
 
-The project combines offline machine-learning evaluation with an experimental live packet-capture demonstration.
+The Random Forest model and detection-result logic remain available for offline
+evaluation and controlled validation. Live machine-learning inference is currently
+disabled because compatibility between the frozen CICIDS2017 model and the live
+traffic domain has not been established.
+
+The project combines offline machine-learning evaluation with an experimental live
+packet-capture and feature-validation workflow.
 
 ## Features
 
 * Live network packet capture
 * Network-flow feature extraction
-* Machine-learning-based traffic classification
-* Random Forest classification
-* Prediction confidence display
-* Attack-probability risk scoring
-* Severity classification
-* Normal and suspicious traffic display
+* Frozen Random Forest model for offline evaluation
+* Model feature-schema validation
+* Packet-to-flow semantic validation
+* Live feature-distribution diagnostics
 * CSV-based detection history
 * Tkinter desktop dashboard
+* CICIDS2017-based model training and evaluation
 * CICIDS2017-based model training and evaluation
 
 ## Technology Stack
