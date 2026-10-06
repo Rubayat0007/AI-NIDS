@@ -1,3 +1,5 @@
+from math import isfinite
+
 import pytest
 
 from scapy.layers.inet import IP, TCP, UDP
@@ -343,3 +345,50 @@ def test_down_up_ratio_matches_cicflowmeter_integer_division():
     assert features["total_fwd_packets"] == 2.0
     assert features["total_bwd_packets"] == 1.0
     assert features["down_up_ratio"] == pytest.approx(0.0)
+
+
+def test_extract_flows_returns_finite_canonical_feature_record():
+    packets = [
+        make_tcp_packet(
+            "10.0.0.1",
+            "10.0.0.2",
+            12345,
+            80,
+            1000.0,
+            payload=b"a" * 6,
+            flags="S",
+        ),
+        make_tcp_packet(
+            "10.0.0.2",
+            "10.0.0.1",
+            80,
+            12345,
+            1000.001,
+            payload=b"b" * 6,
+            flags="SA",
+        ),
+    ]
+
+    features = extract_flows(packets)
+
+    assert len(features) == 1
+
+    record = features[0]
+
+    assert list(record) == FEATURE_NAMES
+    assert len(record) == len(FEATURE_NAMES)
+    assert all(
+        isinstance(value, (int, float))
+        for value in record.values()
+    )
+    assert all(
+        isfinite(float(value))
+        for value in record.values()
+    )
+
+    assert record["total_fwd_packets"] == 1.0
+    assert record["total_bwd_packets"] == 1.0
+    assert record["flow_bytes"] == pytest.approx(12.0)
+    assert record["flow_packets"] == 2.0
+    assert record["avg_packet_size"] == pytest.approx(9.0)
+    assert record["down_up_ratio"] == pytest.approx(1.0)
