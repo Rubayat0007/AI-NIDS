@@ -4,7 +4,10 @@ import numpy as np
 import pytest
 from scapy.layers.inet import IP, TCP
 
-from src.detection import detect_packets
+from src.detection import (
+    aggregate_detection_results,
+    detect_packets,
+)
 from src.features.schema import FEATURE_NAMES
 from src.inference import load_model
 
@@ -126,3 +129,113 @@ def test_detect_packets_rejects_invalid_capture_duration(
             [],
             capture_duration=capture_duration,
         )
+
+
+
+def test_aggregate_detection_results_selects_highest_attack_probability():
+    detection = {
+        "flows": [
+            {
+                "prediction": 0,
+                "probabilities": np.array([0.90, 0.10]),
+            },
+            {
+                "prediction": 1,
+                "probabilities": np.array([0.15, 0.85]),
+            },
+        ],
+        "packet_count": 4,
+        "capture_duration": 8.0,
+    }
+
+    result = aggregate_detection_results(detection)
+
+    assert result["prediction"] == 1
+    assert result["attack_probability"] == pytest.approx(0.85)
+    assert result["confidence"] == pytest.approx(0.85)
+    assert result["severity"] == "HIGH"
+    assert result["packet_count"] == 4
+    assert result["duration"] == 8.0
+    assert result["flows"] is detection["flows"]
+
+
+def test_aggregate_detection_results_uses_highest_risk_flow_when_all_benign():
+    detection = {
+        "flows": [
+            {
+                "prediction": 0,
+                "probabilities": np.array([0.95, 0.05]),
+            },
+            {
+                "prediction": 0,
+                "probabilities": np.array([0.60, 0.40]),
+            },
+        ],
+        "packet_count": 4,
+        "capture_duration": 8.0,
+    }
+
+    result = aggregate_detection_results(detection)
+
+    assert result["prediction"] == 0
+    assert result["attack_probability"] == pytest.approx(0.40)
+    assert result["confidence"] == pytest.approx(0.60)
+    assert result["severity"] == "SUSPICIOUS"
+
+
+def test_aggregate_detection_results_handles_empty_detection():
+    detection = {
+        "flows": [],
+        "packet_count": 0,
+        "capture_duration": 8.0,
+    }
+
+    result = aggregate_detection_results(detection)
+
+    assert result == {
+        "prediction": 0,
+        "confidence": 0.0,
+        "attack_probability": 0.0,
+        "severity": "LOW",
+        "packet_count": 0,
+        "duration": 8.0,
+        "flows": [],
+    }
+
+
+@pytest.mark.parametrize(
+    "invalid_detection",
+    [
+        None,
+        {"flows": "invalid", "packet_count": 0, "capture_duration": 8.0},
+        {"flows": [{}], "packet_count": 1, "capture_duration": 8.0},
+        {
+            "flows": [
+                {
+                    "prediction": 0,
+                    "probabilities": np.array([0.8, 0.1]),
+                }
+            ],
+            "packet_count": 1,
+            "capture_duration": 8.0,
+        },
+    ],
+)
+def test_aggregate_detection_results_rejects_invalid_contract(
+    invalid_detection,
+):
+    with pytest.raises((TypeError, ValueError)):
+        aggregate_detection_results(invalid_detection)
+
+@pytest.mark.parametrize("packet_count", [1.5, float("nan"), float("inf")])
+def test_aggregate_detection_results_rejects_non_integer_packet_count(
+    packet_count,
+):
+    detection = {
+        "flows": [],
+        "packet_count": packet_count,
+        "capture_duration": 8.0,
+    }
+
+    with pytest.raises((TypeError, ValueError)):
+        aggregate_detection_results(detection)
