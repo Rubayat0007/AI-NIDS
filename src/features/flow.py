@@ -354,8 +354,11 @@ def extract_flow_features(flow):
         else 0.0
     )
 
+    # Match CICFlowMeter's first-packet contribution to the
+    # overall packet-length statistics.
+    first_packet_bytes = _payload_length(packets[0])
     avg_packet_size = (
-        total_bytes / packet_count
+        (total_bytes + first_packet_bytes) / packet_count
     )
 
     duration_seconds = (
@@ -374,8 +377,9 @@ def extract_flow_features(flow):
         else 0.0
     )
 
+    # Match CICFlowMeter's integer division semantics.
     down_up_ratio = (
-        backward_count / forward_count
+        float(backward_count // forward_count)
         if forward_count
         else 0.0
     )

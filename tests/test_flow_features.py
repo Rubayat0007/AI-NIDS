@@ -108,7 +108,7 @@ def test_packet_length_and_flow_bytes_use_payload_bytes():
     assert features["fwd_packet_length"] == pytest.approx(10.0)
     assert features["bwd_packet_length"] == pytest.approx(30.0)
     assert features["flow_bytes"] == pytest.approx(40.0)
-    assert features["avg_packet_size"] == pytest.approx(20.0)
+    assert features["avg_packet_size"] == pytest.approx(25.0)
 
 
 def test_directional_iat_is_calculated_separately():
@@ -286,3 +286,60 @@ def test_udp_flow_is_supported():
     assert features[0]["total_fwd_packets"] == 1.0
     assert features[0]["total_bwd_packets"] == 0.0
     assert features[0]["flow_bytes"] == 5.0
+
+def test_avg_packet_size_matches_cicflowmeter_first_packet_behavior():
+    packets = [
+        make_tcp_packet(
+            "10.0.0.1",
+            "10.0.0.2",
+            12345,
+            80,
+            1.0,
+            payload=b"a" * 6,
+        ),
+        make_tcp_packet(
+            "10.0.0.1",
+            "10.0.0.2",
+            12345,
+            80,
+            1.000003,
+            payload=b"b" * 6,
+        ),
+    ]
+
+    features = extract_flows(packets)[0]
+
+    assert features["flow_bytes"] == pytest.approx(12.0)
+    assert features["avg_packet_size"] == pytest.approx(9.0)
+
+
+def test_down_up_ratio_matches_cicflowmeter_integer_division():
+    packets = [
+        make_tcp_packet(
+            "10.0.0.1",
+            "10.0.0.2",
+            12345,
+            80,
+            1.0,
+        ),
+        make_tcp_packet(
+            "10.0.0.1",
+            "10.0.0.2",
+            12345,
+            80,
+            1.1,
+        ),
+        make_tcp_packet(
+            "10.0.0.2",
+            "10.0.0.1",
+            80,
+            12345,
+            1.2,
+        ),
+    ]
+
+    features = extract_flows(packets)[0]
+
+    assert features["total_fwd_packets"] == 2.0
+    assert features["total_bwd_packets"] == 1.0
+    assert features["down_up_ratio"] == pytest.approx(0.0)
