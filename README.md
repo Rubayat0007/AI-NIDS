@@ -277,3 +277,26 @@ Generated evaluation outputs and local backup directories are ignored by Git. Th
 ## License and Responsible Use
 
 AI-NIDS is an experimental cybersecurity project intended for authorized testing, research, and educational use. Only capture or inspect network traffic when you have permission to do so.
+
+## Live inference compatibility boundary
+
+The frozen CICIDS2017 Random Forest model is validated against the reproduced CICIDS2017 training pipeline and held-out evaluation data. The repository also validates the packet-to-flow feature extractor independently against captured packet semantics.
+
+Live packet capture is currently **not authorized for model inference**.
+
+The reason is not an established packet-feature extraction error. Packet-level diagnostics have shown that the canonical live flow features reconcile with the packets observed during capture. However, extended live traffic sampling demonstrated substantial distribution differences between live model-eligible flows and the frozen CICIDS2017 training population, including differences in flow duration, packet rate, inter-arrival times, active/idle time, and packet/byte distributions.
+
+The current live distribution diagnostic therefore provides evidence of **domain/distribution shift**, but it does not establish that the frozen model is valid for live traffic.
+
+### Requirements before enabling live inference
+
+Live inference must remain disabled until all of the following are established:
+
+1. The live packet-to-flow feature semantics remain consistent with the canonical CICIDS2017 feature definitions.
+2. A representative live/operational traffic dataset is collected and documented.
+3. The live feature distribution is evaluated against the intended deployment population.
+4. The frozen model is evaluated on an appropriate, representative live-domain validation set.
+5. Any retraining or adaptation is performed as a separate, reproducible model-development process rather than by modifying the frozen production artifact.
+6. Detection performance, false-positive behavior, and operational failure modes are evaluated before enabling live predictions.
+
+The current diagnostics are validation and evidence-gathering tools only. They do not authorize live inference and do not modify the frozen model or dataset.
