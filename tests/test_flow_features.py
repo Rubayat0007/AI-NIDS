@@ -392,3 +392,29 @@ def test_extract_flows_returns_finite_canonical_feature_record():
     assert record["flow_packets"] == 2.0
     assert record["avg_packet_size"] == pytest.approx(9.0)
     assert record["down_up_ratio"] == pytest.approx(1.0)
+
+def test_extract_flow_groups_preserves_original_packets():
+    packets = [
+        make_tcp_packet(
+            "10.0.0.1",
+            "10.0.0.2",
+            12345,
+            80,
+            1.0,
+        ),
+        make_tcp_packet(
+            "10.0.0.2",
+            "10.0.0.1",
+            80,
+            12345,
+            1.5,
+        ),
+    ]
+
+    from src.features.flow import extract_flow_groups
+
+    groups = extract_flow_groups(packets)
+
+    assert len(groups) == 1
+    assert groups[0]["packets"] == packets
+    assert groups[0]["forward_endpoint"] == ("10.0.0.1", 12345)

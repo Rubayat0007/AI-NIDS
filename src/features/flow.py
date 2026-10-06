@@ -423,6 +423,11 @@ def extract_flow_features(flow):
     }
 
 
+def extract_flow_groups(packets: Iterable[Packet]):
+    """Return grouped flow records with their original packets preserved."""
+    return group_packets_into_flows(packets)
+
+
 def extract_flows(packets: Iterable[Packet]):
     """
     Extract one canonical feature vector for every
