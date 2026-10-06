@@ -34,6 +34,12 @@ LOG_FILE = os.path.join(RESULTS_DIR, "detection_log.csv")
 
 CAPTURE_SECONDS = 8
 
+# Live Scapy feature extraction is not yet verified as semantically
+# compatible with the frozen CICIDS2017 training feature pipeline.
+# Keep live ML inference disabled rather than producing misleading
+# predictions from incompatible flow features.
+LIVE_INFERENCE_ENABLED = False
+
 
 # ============================================================
 # GLOBAL MODEL STATE
@@ -417,7 +423,17 @@ def save_detection_log(
 def predict_traffic(packets, duration):
     """
     Predict whether the captured traffic is benign or an attack.
+
+    Live ML inference remains disabled until the packet-to-CICIDS2017
+    feature pipeline is verified against the frozen training semantics.
     """
+
+    if not LIVE_INFERENCE_ENABLED:
+        raise RuntimeError(
+            "Live inference is disabled: the current packet feature "
+            "pipeline has not been verified as compatible with the "
+            "frozen CICIDS2017 training features."
+        )
 
     if model is None:
         raise RuntimeError(
