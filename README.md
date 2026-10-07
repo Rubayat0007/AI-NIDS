@@ -68,7 +68,6 @@ AI-NIDS/
 ├── results/
 │   ├── cicids2017_metrics.txt
 │   ├── cicids2017_confusion_matrix.png
-│   ├── evaluation_predictions.csv
 │   └── detection_log.csv
 ├── requirements.txt
 ├── .gitignore
@@ -204,7 +203,6 @@ The script generates:
 
 * `results/cicids2017_metrics.txt`
 * `results/cicids2017_confusion_matrix.png`
-* `results/evaluation_predictions.csv`
 
 The files `results/cicids2017_evaluation_metrics.txt` and `results/cicids2017_classification_report.txt` contain results from an earlier full-dataset evaluation and are retained as supplementary outputs. They are not the primary held-out test-set results documented above.
 
