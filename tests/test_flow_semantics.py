@@ -102,9 +102,3 @@ def test_deterministic_tcp_flow_matches_expected_model_semantics():
     assert model_input.dtype.kind == "f"
 
     assert all(math.isfinite(value) for value in model_input[0])
-
-
-
-
-
-\
