@@ -155,7 +155,7 @@ def test_directional_iat_is_calculated_separately():
     )
 
 
-def test_header_length_uses_actual_headers():
+def test_header_length_matches_transport_header_bytes():
     packets = [
         make_tcp_packet(
             "10.0.0.1",
@@ -176,8 +176,7 @@ def test_header_length_uses_actual_headers():
     features = extract_flows(packets)[0]
 
     expected_header_length = sum(
-        len(packet[IP]) - len(packet[IP].payload)
-        + len(packet[TCP]) - len(packet[TCP].payload)
+        len(packet[TCP]) - len(packet[TCP].payload)
         for packet in packets
     )
 
@@ -288,6 +287,7 @@ def test_udp_flow_is_supported():
     assert features[0]["total_fwd_packets"] == 1.0
     assert features[0]["total_bwd_packets"] == 0.0
     assert features[0]["flow_bytes"] == 5.0
+    assert features[0]["header_length"] == 8.0
 
 def test_avg_packet_size_matches_cicflowmeter_first_packet_behavior():
     packets = [

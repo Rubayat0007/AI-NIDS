@@ -45,17 +45,14 @@ def _packet_header_length(packet):
     if IP not in packet:
         return 0.0
 
-    ip = packet[IP]
-    ip_header_length = int(ip.ihl or 5) * 4
-
     if TCP in packet:
-        transport_header_length = int(packet[TCP].dataofs or 5) * 4
-    elif UDP in packet:
-        transport_header_length = 8
-    else:
-        transport_header_length = 0
+        return float(int(packet[TCP].dataofs or 5) * 4)
+    if UDP in packet:
+        return 8.0
 
-    return float(ip_header_length + transport_header_length)
+    # Retain the existing fallback for other IP protocols.
+    ip = packet[IP]
+    return float(int(ip.ihl or 5) * 4)
 
 
 def _transport_ports(packet):
