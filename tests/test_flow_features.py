@@ -209,7 +209,7 @@ def test_active_idle_use_activity_timeout_and_means():
 
     assert ACTIVITY_TIMEOUT_US == 5_000_000.0
     assert features["active_time"] == pytest.approx(
-        1_500_000.0
+        2_000_000.0
     )
     assert features["idle_time"] == pytest.approx(
         6_000_000.0

@@ -156,13 +156,6 @@ def _active_idle_means(timestamps):
         else:
             end_active = timestamp
 
-    final_active = (
-        end_active - start_active
-    ) * 1_000_000.0
-
-    if final_active > 0:
-        active_periods.append(final_active)
-
     active_mean = (
         float(np.mean(active_periods))
         if active_periods

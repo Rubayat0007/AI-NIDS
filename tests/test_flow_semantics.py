@@ -87,7 +87,7 @@ def test_deterministic_tcp_flow_matches_expected_model_semantics():
     assert features["rst_count"] == 0.0
     assert features["fin_count"] == 0.0
 
-    assert math.isclose(features["active_time"], 3000.0, rel_tol=0.0, abs_tol=1e-9)
+    assert math.isclose(features["active_time"], 0.0, rel_tol=0.0, abs_tol=1e-9)
     assert features["idle_time"] == 0.0
 
     assert features["header_length"] > 0.0
