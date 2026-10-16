@@ -102,3 +102,59 @@ def test_deterministic_tcp_flow_matches_expected_model_semantics():
     assert model_input.dtype.kind == "f"
 
     assert all(math.isfinite(value) for value in model_input[0])
+
+
+@pytest.mark.parametrize(
+    ("flags_sequence", "timestamps"),
+    [
+        pytest.param(
+            ("S", "SA", "PA", "PA"),
+            (100.0, 100.001, 100.002, 100.003),
+            id="synthetic-four-packet-pattern",
+        ),
+        pytest.param(
+            ("S", "SA", "A", "PA"),
+            (200.0, 200.001, 206.0, 206.001),
+            id="idle-gap-four-packet-pattern",
+        ),
+    ],
+)
+def test_synthetic_fixture_tcp_flag_totals_are_counted_per_packet(
+    flags_sequence,
+    timestamps,
+):
+    packets = []
+
+    for index, (flags, timestamp) in enumerate(
+        zip(flags_sequence, timestamps)
+    ):
+        backward = index == 1
+        packet = (
+            IP(
+                src="10.0.0.2" if backward else "10.0.0.1",
+                dst="10.0.0.1" if backward else "10.0.0.2",
+            )
+            / TCP(
+                sport=80 if backward else 12345,
+                dport=12345 if backward else 80,
+                flags=flags,
+                seq=index + 1,
+            )
+            / Raw(b"x")
+        )
+        packet.time = timestamp
+        packets.append(packet)
+
+    flows = extract_flows(packets)
+
+    assert len(flows) == 1
+    features = flows[0]
+
+    assert features["flow_packets"] == 4.0
+    assert features["syn_count"] == 2.0
+    assert features["ack_count"] == 3.0
+    assert features["rst_count"] == 0.0
+    assert features["fin_count"] == 0.0
+
+    # PSH is not a feature in the candidate's canonical 20-feature schema.
+    assert "psh_count" not in features
