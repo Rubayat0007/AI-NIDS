@@ -239,3 +239,47 @@ def test_aggregate_detection_results_rejects_non_integer_packet_count(
 
     with pytest.raises((TypeError, ValueError)):
         aggregate_detection_results(detection)
+
+
+@pytest.mark.parametrize("prediction", [0.7, True, "1"])
+def test_aggregate_detection_results_rejects_non_integer_predictions(
+    prediction,
+):
+    detection = {
+        "flows": [
+            {
+                "prediction": prediction,
+                "probabilities": np.array([0.8, 0.2]),
+            }
+        ],
+        "packet_count": 1,
+        "capture_duration": 1.0,
+    }
+
+    with pytest.raises((TypeError, ValueError)):
+        aggregate_detection_results(detection)
+
+
+@pytest.mark.parametrize(
+    "probabilities",
+    [
+        np.array([1.1, -0.1]),
+        np.array([1.01, -0.01]),
+    ],
+)
+def test_aggregate_detection_results_rejects_out_of_range_probabilities(
+    probabilities,
+):
+    detection = {
+        "flows": [
+            {
+                "prediction": 0,
+                "probabilities": probabilities,
+            }
+        ],
+        "packet_count": 1,
+        "capture_duration": 1.0,
+    }
+
+    with pytest.raises(ValueError, match="between 0 and 1"):
+        aggregate_detection_results(detection)

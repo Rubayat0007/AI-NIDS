@@ -124,12 +124,23 @@ def aggregate_detection_results(detection):
                 "flow probabilities must be finite"
             )
 
+        if np.any((probabilities < 0.0) | (probabilities > 1.0)):
+            raise ValueError(
+                "flow probabilities must be between 0 and 1"
+            )
+
         if not np.isclose(float(probabilities.sum()), 1.0):
             raise ValueError(
                 "flow probabilities must sum to 1"
             )
 
-        prediction = int(flow["prediction"])
+        prediction_value = flow["prediction"]
+        if isinstance(prediction_value, (bool, np.bool_)) or not isinstance(
+            prediction_value, (int, np.integer)
+        ):
+            raise TypeError("flow prediction must be an integer")
+
+        prediction = int(prediction_value)
 
         if prediction not in {0, 1}:
             raise ValueError(
