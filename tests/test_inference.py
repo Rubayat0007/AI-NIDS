@@ -19,6 +19,7 @@ def test_frozen_model_predicts_canonical_feature_record():
     model = load_model()
 
     assert list(model.feature_names_in_) == FEATURE_NAMES
+    assert np.array_equal(model.classes_, np.array([0, 1]))
     assert model.n_features_in_ == len(FEATURE_NAMES)
 
     features = make_features()
@@ -39,3 +40,4 @@ def test_frozen_model_predicts_canonical_feature_record():
     assert probabilities.shape == (2,)
     assert np.isfinite(probabilities).all()
     assert float(probabilities.sum()) == pytest.approx(1.0)
+    assert result["prediction"] == int(model.classes_[np.argmax(probabilities)])
