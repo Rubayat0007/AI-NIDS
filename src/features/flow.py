@@ -213,7 +213,7 @@ def group_packets_into_flows(
             ) * 1_000_000.0
 
             if elapsed_us > flow_timeout_us:
-                if len(current_flow) > 1:
+                if current_flow:
                     flows.append(_build_flow(current_flow))
 
                 current_flow = [packet]

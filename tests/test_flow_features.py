@@ -418,3 +418,81 @@ def test_extract_flow_groups_preserves_original_packets():
     assert len(groups) == 1
     assert groups[0]["packets"] == packets
     assert groups[0]["forward_endpoint"] == ("10.0.0.1", 12345)
+
+
+
+@pytest.mark.parametrize(
+    ("elapsed_seconds", "expected_flow_sizes"),
+    [
+        pytest.param(
+            FLOW_TIMEOUT_US / 1_000_000.0,
+            [3],
+            id="exact-timeout-boundary",
+        ),
+        pytest.param(
+            (FLOW_TIMEOUT_US + 1.0) / 1_000_000.0,
+            [2, 1],
+            id="one-microsecond-beyond-timeout",
+        ),
+    ],
+)
+def test_flow_timeout_exact_boundary(
+    elapsed_seconds,
+    expected_flow_sizes,
+):
+    packets = [
+        make_tcp_packet(
+            "10.0.0.1",
+            "10.0.0.2",
+            12345,
+            80,
+            0.0,
+        ),
+        make_tcp_packet(
+            "10.0.0.1",
+            "10.0.0.2",
+            12345,
+            80,
+            1.0,
+        ),
+        make_tcp_packet(
+            "10.0.0.1",
+            "10.0.0.2",
+            12345,
+            80,
+            elapsed_seconds,
+        ),
+    ]
+
+    flows = group_packets_into_flows(
+        packets,
+        flow_timeout_us=FLOW_TIMEOUT_US,
+    )
+
+    assert [len(flow["packets"]) for flow in flows] == expected_flow_sizes
+
+
+def test_flow_timeout_preserves_single_packet_before_split():
+    packets = [
+        make_tcp_packet(
+            "10.0.0.1",
+            "10.0.0.2",
+            12345,
+            80,
+            0.0,
+        ),
+        make_tcp_packet(
+            "10.0.0.1",
+            "10.0.0.2",
+            12345,
+            80,
+            (FLOW_TIMEOUT_US + 1.0) / 1_000_000.0,
+        ),
+    ]
+
+    flows = group_packets_into_flows(
+        packets,
+        flow_timeout_us=FLOW_TIMEOUT_US,
+    )
+
+    assert [len(flow["packets"]) for flow in flows] == [1, 1]
