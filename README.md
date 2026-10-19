@@ -278,6 +278,8 @@ Run the test suite:
 python -m pytest -q
 ```
 
+Latest recorded local verification: **86 tests passed**. Re-run the suite after code changes and before release.
+
 The current test suite validates:
 
 * The model contains the expected feature names.
@@ -298,9 +300,39 @@ Generated evaluation outputs and local backup directories are ignored by Git. Th
 
 AI-NIDS is an experimental cybersecurity project intended for authorized testing, research, and educational use. Only capture or inspect network traffic when you have permission to do so.
 
+## Model and Dataset Provenance Status
+
+The processed CICIDS2017 dataset has been reconstructed from the available local
+inputs and preparation logic. The reconstructed CSV contains 2,020,632 rows and
+has SHA-256:
+
+`14B517C997478428C14512CC94312C23017BD6D8F96048BD168619C89B7B3737`
+
+Its hash matches the saved processed CSV byte for byte. This verifies reproducibility
+of the current reconstruction, but does **not** prove that the historical model
+training run used those exact input bytes, preparation code, or a particular
+historical CICFlowMeter build and configuration.
+
+The frozen model artifact has SHA-256:
+
+`1992228DFDC81529D8F87028252688AB39BC5AEB66A7AA2C5A38D164C831B3F2`
+
+The historical training provenance remains unresolved. The pinned CICFlowMeter
+fixtures are reference comparators for feature behavior; they do not establish
+which generator produced the historical training features.
+
+Before claiming complete historical provenance, retain evidence of the exact
+training input bytes, preprocessing code and configuration, model-training
+environment and parameters, and feature-generator version/configuration used
+for the original model artifact.
+
+Offline evaluation and passing automated tests do not establish suitability for
+operational live traffic. Live model inference remains disabled until the
+requirements below are satisfied.
+
 ## Live inference compatibility boundary
 
-The frozen CICIDS2017 Random Forest model is validated against the reproduced CICIDS2017 training pipeline and held-out evaluation data. The repository also validates the packet-to-flow feature extractor independently against captured packet semantics.
+Offline evaluation of the frozen CICIDS2017 Random Forest model uses the reconstructed CICIDS2017 dataset and a held-out evaluation split. The reconstruction is reproducible, but the historical training inputs and feature-generator configuration have not been fully established. The repository also validates the packet-to-flow feature extractor independently against captured packet semantics.
 
 Live packet capture is currently **not authorized for model inference**.
 
