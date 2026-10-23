@@ -92,3 +92,14 @@ def test_model_feature_order_is_preserved():
         "fwd_iat_mean",
         "bwd_iat_mean",
     ]
+
+
+# Environment gate: the raw CICIDS2017 CSVs are not committed.
+import pytest as _pytest
+from pathlib import Path as _Path
+
+_RAW_DATA_DIR = _Path(__file__).resolve().parents[1] / "data" / "raw" / "MachineLearningCVE"
+pytestmark = _pytest.mark.skipif(
+    not _RAW_DATA_DIR.is_dir(),
+    reason=f"raw CICIDS2017 data not present: {_RAW_DATA_DIR}",
+)

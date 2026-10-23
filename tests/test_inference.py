@@ -41,3 +41,14 @@ def test_frozen_model_predicts_canonical_feature_record():
     assert np.isfinite(probabilities).all()
     assert float(probabilities.sum()) == pytest.approx(1.0)
     assert result["prediction"] == int(model.classes_[np.argmax(probabilities)])
+
+
+# Environment gate: the frozen artifact is not committed.
+import pytest as _pytest
+from pathlib import Path as _Path
+
+_MODEL_PATH = _Path(__file__).resolve().parents[1] / "src" / "models" / "nids_random_forest_cicids2017.pkl"
+pytestmark = _pytest.mark.skipif(
+    not _MODEL_PATH.exists(),
+    reason=f"frozen model artifact not present: {_MODEL_PATH}",
+)
