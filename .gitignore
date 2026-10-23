@@ -10,9 +10,9 @@ detection_log.csv
 .idea/
 .DS_Store
 Thumbs.db
-data/raw/
-data/processed/
+/data/raw/
+/data/processed/
 *.csv
 
-results/
+/results/
 backup_before_upgrade_*/
