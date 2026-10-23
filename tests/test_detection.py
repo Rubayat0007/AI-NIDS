@@ -11,6 +11,18 @@ from src.detection import (
 from src.features.schema import FEATURE_NAMES
 from src.inference import load_model
 
+class _StubModel:
+    """Deterministic classifier stand-in: always 60% benign / 40% attack."""
+
+    classes_ = np.array([0, 1])
+
+    def predict(self, frame):
+        return np.zeros(len(frame), dtype=int)
+
+    def predict_proba(self, frame):
+        return np.tile(np.array([0.6, 0.4]), (len(frame), 1))
+
+
 
 def make_packets():
     forward = (
@@ -31,7 +43,7 @@ def make_packets():
 
 
 def test_detect_packets_returns_one_result_per_flow():
-    model = load_model()
+    model = _StubModel()
 
     with warnings.catch_warnings():
         warnings.simplefilter("error")
@@ -63,7 +75,7 @@ def test_detect_packets_returns_one_result_per_flow():
 
 
 def test_detect_packets_preserves_multiple_flow_boundaries():
-    model = load_model()
+    model = _StubModel()
 
     first = (
         IP(src="192.0.2.10", dst="198.51.100.20")
@@ -94,7 +106,7 @@ def test_detect_packets_preserves_multiple_flow_boundaries():
 
 
 def test_detect_packets_allows_empty_packet_capture():
-    model = load_model()
+    model = _StubModel()
 
     result = detect_packets(
         model,
@@ -121,7 +133,7 @@ def test_detect_packets_allows_empty_packet_capture():
 def test_detect_packets_rejects_invalid_capture_duration(
     capture_duration,
 ):
-    model = load_model()
+    model = _StubModel()
 
     with pytest.raises((TypeError, ValueError)):
         detect_packets(
@@ -283,14 +295,3 @@ def test_aggregate_detection_results_rejects_out_of_range_probabilities(
 
     with pytest.raises(ValueError, match="between 0 and 1"):
         aggregate_detection_results(detection)
-
-
-# Environment gate: the frozen artifact is not committed.
-import pytest as _pytest
-from pathlib import Path as _Path
-
-_MODEL_PATH = _Path(__file__).resolve().parents[1] / "src" / "models" / "nids_random_forest_cicids2017.pkl"
-pytestmark = _pytest.mark.skipif(
-    not _MODEL_PATH.exists(),
-    reason=f"frozen model artifact not present: {_MODEL_PATH}",
-)
