@@ -352,3 +352,18 @@ Live inference must remain disabled until all of the following are established:
 6. Detection performance, false-positive behavior, and operational failure modes are evaluated before enabling live predictions.
 
 The current diagnostics are validation and evidence-gathering tools only. They do not authorize live inference and do not modify the frozen model or dataset.
+
+## Claims to evidence
+
+Ledger: `docs/ledger.md`. Numbers without a row are not claimed.
+
+| Claim | Evidence | Status |
+|---|---|---|
+| 102 tests pass, 0 skipped | `R-NIDS-tests-01` | verified |
+| Offline CICIDS2017: acc 99.55 %, F1 98.60 % | `R-NIDS-offline-01` | recorded (offline) |
+| Frozen model detects 0 of 75 live-labelled attack flows | `R-NIDS-scenario-01` | measured (synthetic loopback) |
+| Candidate trained on held-out runs: F1 0.870, FPR 0.368 | `R-NIDS-adapt-01` | measured (synthetic) |
+| Real benign traffic: frozen flags 0/45, candidate flags 11/45 (24.4 %) | `R-NIDS-benign-01` | measured, one host, 45 s |
+| Live network detection capability | — | **not claimed; inference disabled** |
+| Cause of the 0/75 recall (H1–H4) | — | **untested hypotheses** |
+| Deployable candidate model | — | **not claimed; FPR unacceptable** |
