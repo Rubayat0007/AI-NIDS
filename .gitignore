@@ -16,3 +16,6 @@ Thumbs.db
 
 /results/
 backup_before_upgrade_*/
+
+# Local research archive (not version controlled)
+/archive/
