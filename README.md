@@ -278,7 +278,7 @@ Run the test suite:
 python -m pytest -q
 ```
 
-Latest recorded local verification: **86 tests passed**. Re-run the suite after code changes and before release.
+Latest recorded local verification: **102 tests passed**. Re-run the suite after code changes and before release.
 
 The current test suite validates:
 
@@ -367,3 +367,23 @@ Ledger: `docs/ledger.md`. Numbers without a row are not claimed.
 | Live network detection capability | — | **not claimed; inference disabled** |
 | Cause of the 0/75 recall (H1–H4) | — | **untested hypotheses** |
 | Deployable candidate model | — | **not claimed; FPR unacceptable** |
+
+## Live-traffic evaluation (2026-10)
+
+The held-out benchmark above measures CICIDS2017, not live traffic. The frozen model
+was therefore evaluated on captures taken on this machine:
+
+| Check | Result |
+|---|---|
+| live-labelled attack scenarios detected | **0 of 75** |
+| real benign flows flagged | 0 of 45 |
+| 30-second benign flow sample | 33 flows / 284 packets |
+
+A feature-parity audit ranked the distribution shift by feature (Kolmogorov-Smirnov
+statistic): `ack_count` 0.85, `bwd_packet_length` 0.62, `fwd_iat_mean` 0.59,
+`flow_rate` 0.51, against small values for `flow_packets` (0.11) and `rst_count`
+(0.09). The frozen model is **not transferable** to this capture environment.
+
+An adaptation candidate reached F1 0.870 but flagged **36.8 % of real benign
+traffic**, so it was rejected and the frozen model retained. Live inference stays
+disabled by default. See `docs/live-readiness.md` and `docs/measurements/`.
